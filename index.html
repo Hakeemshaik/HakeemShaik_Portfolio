@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creative Portfolio Showcase</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- RESET & BASICS --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: #050505;
+            color: #ffffff;
+            overflow: hidden; 
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* --- NAVIGATION --- */
+        nav {
+            position: fixed;
+            top: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            background: rgba(20, 20, 20, 0.6);
+            backdrop-filter: blur(20px);
+            padding: 0.5rem 2rem;
+            border-radius: 100px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            gap: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        nav button {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.6);
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 0.5rem 0;
+            position: relative;
+        }
+
+        nav button:hover { color: #fff; }
+        nav button.active { color: #fff; font-weight: 700; }
+        
+        nav button.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 5px;
+            height: 5px;
+            background-color: #fff;
+            border-radius: 50%;
+        }
+
+        .info-trigger {
+            border-left: 1px solid rgba(255,255,255,0.1);
+            padding-left: 1.5rem !important;
+        }
+
+        /* --- SLIDESHOW CONTAINER --- */
+        .slide-container { position: relative; width: 100%; height: 100%; }
+
+        /* --- SLIDES --- */
+        .slide {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            opacity: 0; visibility: hidden;
+            transition: opacity 0.6s ease-in-out, visibility 0.6s;
+            padding: 2rem; text-align: center;
+        }
+        .slide.active { opacity: 1; visibility: visible; z-index: 1; }
+
+        /* --- VIBRANT BACKGROUNDS --- */
+        #games { background: radial-gradient(circle at center, #4a00e0 0%, #8e2de2 50%, #050505 100%); }
+        #automation { background: radial-gradient(circle at center, #00f260 0%, #0575e6 50%, #050505 100%); }
+        #websites { background: radial-gradient(circle at center, #ff9966 0%, #ff5e62 50%, #050505 100%); }
+
+        /* --- SLIDE CONTENT --- */
+        .slide-title {
+            font-size: clamp(3rem, 8vw, 6rem);
+            font-weight: 700; margin-bottom: 1rem;
+            text-transform: uppercase; letter-spacing: -2px;
+            text-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .slide-subtitle { font-size: 1.2rem; opacity: 0.8; margin-bottom: 4rem; max-width: 600px; }
+
+        /* --- PROJECT GRID --- */
+        .project-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem; width: 100%; max-width: 1200px;
+        }
+        .project-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 2rem;
+            transition: transform 0.3s ease, background 0.3s ease;
+            cursor: pointer; display: flex; flex-direction: column; align-items: center;
+        }
+        .project-card:hover { transform: translateY(-10px); background: rgba(255, 255, 255, 0.15); }
+        .card-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+        .card-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .card-desc { font-size: 0.9rem; opacity: 0.7; }
+
+        /* --- INFO OVERLAY --- */
+        #info-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(20px); /* Stronger blur for cleaner look */
+            z-index: 200;
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+        #info-overlay.active { opacity: 1; pointer-events: auto; }
+
+        .info-panel {
+            background: rgba(30, 30, 30, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 90%; max-width: 900px; /* Wider for split layout */
+            border-radius: 24px;
+            padding: 4rem; /* More padding */
+            position: relative;
+            transform: translateY(20px);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+        #info-overlay.active .info-panel { transform: translateY(0); }
+
+        .close-btn {
+            position: absolute; top: 2rem; right: 2rem;
+            background: none; border: none; color: #fff;
+            font-size: 2rem; cursor: pointer; opacity: 0.5; transition: 0.2s;
+        }
+        .close-btn:hover { opacity: 1; transform: rotate(90deg); }
+
+        /* --- TABS --- */
+        .panel-tabs {
+            display: flex; gap: 2rem; margin-bottom: 3rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem;
+        }
+        .tab-btn {
+            background: none; border: none; color: rgba(255,255,255,0.5);
+            font-family: inherit; font-size: 1.2rem; font-weight: 700; cursor: pointer;
+        }
+        .tab-btn.active { color: #fff; }
+
+        .tab-content { display: none; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- ABOUT & SKILLS (ADAM HARTWIG STYLE) --- */
+        .about-split {
+            display: flex;
+            gap: 4rem;
+            align-items: flex-start;
+        }
+
+        .bio-side {
+            flex: 1;
+        }
+        
+        .bio-text {
+            font-size: 1.1rem; line-height: 1.8;
+            color: #ddd; /* Slightly lighter gray */
+            max-width: 50ch;
+        }
+
+        .skills-side {
+            flex: 1;
+        }
+
+        .skills-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: #fff;
+        }
+
+        .skills-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .skill {
+            /* Pill Shape Style */
+            display: inline-block;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 0.6rem 1.2rem;
+            border-radius: 50px; /* Rounded pill shape */
+            font-family: 'JetBrains Mono', monospace; /* Code font */
+            font-size: 0.9rem;
+            color: #ccc;
+            cursor: default;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* The Hover Effect - Invert colors */
+        .skill:hover {
+            background: #ffffff;
+            color: #000000;
+            transform: translateY(-3px);
+            border-color: #ffffff;
+            box-shadow: 0 5px 15px rgba(255, 255, 255, 0.2);
+        }
+
+        /* --- CONTACT --- */
+        .contact-big-link {
+            font-size: 3rem; font-weight: 700;
+            color: #fff; text-decoration: none;
+            margin-bottom: 2rem; display: block;
+            transition: 0.2s;
+        }
+        .contact-big-link:hover { color: #888; }
+        .social-row { display: flex; gap: 2rem; font-size: 1.1rem; }
+        .social-row a { color: #aaa; text-decoration: none; transition: 0.2s; }
+        .social-row a:hover { color: #fff; }
+
+        /* --- MOBILE --- */
+        @media (max-width: 768px) {
+            nav { width: 95%; top: 1rem; padding: 0.8rem; flex-wrap: wrap; justify-content: center; gap: 1rem; }
+            .info-trigger { border-left: none; padding-left: 0 !important; }
+            .info-panel { padding: 2rem; width: 95%; }
+            .about-split { flex-direction: column; gap: 2rem; }
+            .contact-big-link { font-size: 1.8rem; }
+            .slide-title { font-size: 2.5rem; }
+            .project-grid { max-height: 40vh; overflow-y: auto; padding-bottom: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav>
+        <button class="nav-btn active" onclick="switchWorkSlide('games')">Games</button>
+        <button class="nav-btn" onclick="switchWorkSlide('automation')">Automation</button>
+        <button class="nav-btn" onclick="switchWorkSlide('websites')">Websites</button>
+        
+        <button class="info-trigger nav-btn" onclick="openOverlay('about')">About</button>
+        <button class="info-trigger nav-btn" onclick="openOverlay('contact')">Contact</button>
+    </nav>
+
+    <!-- Slideshow Container -->
+    <div class="slide-container">
+
+        <!-- SLIDE 1: GAMES -->
+        <section id="games" class="slide active">
+            <h1 class="slide-title">My Games</h1>
+            <p class="slide-subtitle">Interactive experiences built with Unity & Godot.</p>
+            <div class="project-grid">
+                <div class="project-card"><div class="card-icon">🚀</div><h3 class="card-title">Space Runner</h3><p class="card-desc">Neon galaxy runner.</p></div>
+                <div class="project-card"><div class="card-icon">⚔️</div><h3 class="card-title">Dungeon Crawler</h3><p class="card-desc">Procedural RPG.</p></div>
+                <div class="project-card"><div class="card-icon">🏎️</div><h3 class="card-title">Turbo Drift</h3><p class="card-desc">Physics racer.</p></div>
+            </div>
+        </section>
+
+        <!-- SLIDE 2: AUTOMATION -->
+        <section id="automation" class="slide">
+            <h1 class="slide-title">Automation & AI</h1>
+            <p class="slide-subtitle">Scripts, bots, and ML models to optimize workflows.</p>
+            <div class="project-grid">
+                <div class="project-card"><div class="card-icon">🤖</div><h3 class="card-title">ChatBot AI</h3><p class="card-desc">NLP Support Bot.</p></div>
+                <div class="project-card"><div class="card-icon">📊</div><h3 class="card-title">Data Scraper</h3><p class="card-desc">Python Market Trends.</p></div>
+                <div class="project-card"><div class="card-icon">⚙️</div><h3 class="card-title">Workflow Auto</h3><p class="card-desc">Social Media Bot.</p></div>
+            </div>
+        </section>
+
+        <!-- SLIDE 3: WEBSITES -->
+        <section id="websites" class="slide">
+            <h1 class="slide-title">Websites</h1>
+            <p class="slide-subtitle">Responsive, high-performance web development.</p>
+            <div class="project-grid">
+                <div class="project-card"><div class="card-icon">🛒</div><h3 class="card-title">E-Commerce</h3><p class="card-desc">Full-stack Shop.</p></div>
+                <div class="project-card"><div class="card-icon">🎨</div><h3 class="card-title">Portfolio</h3><p class="card-desc">Artist Showcase.</p></div>
+                <div class="project-card"><div class="card-icon">📰</div><h3 class="card-title">News Portal</h3><p class="card-desc">Dynamic CMS.</p></div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- GLASS OVERLAY -->
+    <div id="info-overlay">
+        <div class="info-panel">
+            <button class="close-btn" onclick="closeOverlay()">×</button>
+            
+            <div class="panel-tabs">
+                <button class="tab-btn active" id="tab-btn-about" onclick="switchTab('about')">About</button>
+                <button class="tab-btn" id="tab-btn-contact" onclick="switchTab('contact')">Contact</button>
+            </div>
+
+            <!-- ABOUT CONTENT (Split Layout) -->
+            <div id="tab-about" class="tab-content active">
+                <div class="about-split">
+                    <div class="bio-side">
+                        <p class="bio-text">
+                            I am a creative developer with a passion for building immersive digital experiences. 
+                            I combine technical expertise with artistic vision to create games, websites, and automation tools 
+                            that are both functional and beautiful.
+                        </p>
+                    </div>
+                    
+                    <div class="skills-side">
+                        <h3 class="skills-title">Technologies</h3>
+                        <ul class="skills-list">
+                            <!-- Frontend -->
+                            <li class="skill">HTML5</li>
+                            <li class="skill">CSS3 / SCSS</li>
+                            <li class="skill">JavaScript (ES6+)</li>
+                            <li class="skill">React.js</li>
+                            <li class="skill">TypeScript</li>
+                            <li class="skill">Tailwind CSS</li>
+                            <li class="skill">Next.js</li>
+                            
+                            <!-- Backend & Tools -->
+                            <li class="skill">Node.js</li>
+                            <li class="skill">Python</li>
+                            <li class="skill">Git</li>
+                            <li class="skill">Figma</li>
+                            
+                            <!-- Games & AI -->
+                            <li class="skill">Unity 3D</li>
+                            <li class="skill">C#</li>
+                            <li class="skill">TensorFlow</li>
+                            <li class="skill">OpenAI API</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTACT CONTENT -->
+            <div id="tab-contact" class="tab-content">
+                <h2 style="margin-bottom:1rem;">Get In Touch</h2>
+                <a href="mailto:hello@example.com" class="contact-big-link">hello@example.com</a>
+                <div class="social-row">
+                    <a href="#">Twitter / X</a>
+                    <a href="#">LinkedIn</a>
+                    <a href="#">GitHub</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        function switchWorkSlide(slideId) {
+            document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+            document.getElementById(slideId).classList.add('active');
+
+            const navBtns = document.querySelectorAll('.nav-btn:not(.info-trigger)');
+            navBtns.forEach(btn => btn.classList.remove('active'));
+            const activeBtn = Array.from(navBtns).find(btn => btn.getAttribute('onclick').includes(slideId));
+            if(activeBtn) activeBtn.classList.add('active');
+        }
+
+        const overlay = document.getElementById('info-overlay');
+        const aboutTabBtn = document.getElementById('tab-btn-about');
+        const contactTabBtn = document.getElementById('tab-btn-contact');
+        const aboutContent = document.getElementById('tab-about');
+        const contactContent = document.getElementById('tab-contact');
+
+        function openOverlay(tabName) {
+            overlay.classList.add('active');
+            switchTab(tabName);
+        }
+
+        function closeOverlay() {
+            overlay.classList.remove('active');
+        }
+
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) closeOverlay();
+        });
+
+        function switchTab(tabName) {
+            aboutTabBtn.classList.remove('active');
+            contactTabBtn.classList.remove('active');
+            aboutContent.classList.remove('active');
+            contactContent.classList.remove('active');
+
+            if(tabName === 'about') {
+                aboutTabBtn.classList.add('active');
+                aboutContent.classList.add('active');
+            } else {
+                contactTabBtn.classList.add('active');
+                contactContent.classList.add('active');
+            }
+        }
+    </script>
+</body>
+</html>
